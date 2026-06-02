@@ -142,6 +142,9 @@ export default function SettingsDrawer({ isOpen, onClose, settings, onSave, isDa
                 <Save size={14} />
                 Save Changes
               </button>
+              <div className={`mt-4 text-center text-[10px] tracking-wider uppercase font-semibold ${muted}`}>
+                Created by Fakhri
+              </div>
             </div>
           </motion.aside>
         </>
