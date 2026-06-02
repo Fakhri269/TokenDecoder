@@ -9,6 +9,19 @@ import OutputViewer from './components/OutputViewer';
 import SettingsDrawer from './components/SettingsDrawer';
 import Toast from './components/Toast';
 
+function findUrlInObject(obj) {
+  if (!obj || typeof obj !== 'object') return null;
+  for (const key in obj) {
+    if (typeof obj[key] === 'string' && /^https?:\/\//i.test(obj[key])) {
+      return obj[key];
+    } else if (typeof obj[key] === 'object') {
+      const found = findUrlInObject(obj[key]);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 function getInitialTheme() {
   const stored = localStorage.getItem('theme');
   if (stored) return stored;
@@ -105,16 +118,19 @@ export default function App() {
   }, [addToast]);
 
   const handleCopyLink = useCallback(async () => {
-    if (!token.trim()) return;
-    const url = new URL(window.location.href);
-    url.searchParams.set('token', token.trim());
+    if (!parsedObj) return;
+    const url = findUrlInObject(parsedObj);
+    if (!url) {
+      addToast('No link found in the result.', 'error');
+      return;
+    }
     try {
-      await navigator.clipboard.writeText(url.toString());
-      addToast('Link copied to clipboard.');
+      await navigator.clipboard.writeText(url);
+      addToast('Link copied from result.');
     } catch {
       addToast('Failed to copy link.', 'error');
     }
-  }, [token, addToast]);
+  }, [parsedObj, addToast]);
 
   useEffect(() => {
     const h = e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); handleDecrypt(); } };
