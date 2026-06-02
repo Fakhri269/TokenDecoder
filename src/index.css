@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Minimalist Light Palette */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #fafafa;
+  --color-bg-tertiary: #f4f4f5;
+  
+  --color-border-subtle: #e4e4e7;
+  --color-border-strong: #d4d4d8;
+  
+  --color-text-primary: #09090b;
+  --color-text-secondary: #52525b;
+  --color-text-tertiary: #71717a;
+  
+  --color-accent-primary: #18181b;
+  --color-accent-hover: #27272a;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+body {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+/* Custom scrollbar - Minimalist */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+
+/* Syntax highlighting - Clean Light Theme */
+.syn-key { color: #0369a1; } /* Blue */
+.syn-str { color: #166534; } /* Green */
+.syn-num { color: #9a3412; } /* Orange */
+.syn-bool { color: #7e22ce; } /* Purple */
+.syn-null { color: #be123c; } /* Red */
+
+/* Textarea placeholder */
+textarea::placeholder { color: #a1a1aa; }
+
+/* Utility classes for border radius to keep it slightly rounded but sharp */
+.rounded-app { border-radius: 6px; }
