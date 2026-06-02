@@ -119,7 +119,7 @@ export default function App() {
             <Lock size={13} className={isDark ? 'text-[#111]' : 'text-white'} />
           </div>
           <span className={`font-semibold text-[15px] tracking-[-0.3px] ${c.textPrimary}`}>
-            Token Decoder
+            Token Forge
           </span>
         </div>
 

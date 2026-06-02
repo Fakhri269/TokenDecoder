@@ -143,7 +143,7 @@ export default function SettingsDrawer({ isOpen, onClose, settings, onSave, isDa
                 Save Changes
               </button>
               <div className={`mt-4 text-center text-[10px] tracking-wider uppercase font-semibold ${muted}`}>
-                Created by Fakhri
+                Token Forge
               </div>
             </div>
           </motion.aside>
