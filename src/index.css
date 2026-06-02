@@ -1,50 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  
-  /* Minimalist Light Palette */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #fafafa;
-  --color-bg-tertiary: #f4f4f5;
-  
-  --color-border-subtle: #e4e4e7;
-  --color-border-strong: #d4d4d8;
-  
-  --color-text-primary: #09090b;
-  --color-text-secondary: #52525b;
-  --color-text-tertiary: #71717a;
-  
-  --color-accent-primary: #18181b;
-  --color-accent-hover: #27272a;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-html {
-  font-family: var(--font-sans);
-}
+html { font-family: var(--font-sans); }
 
+/* ── Light ── */
 body {
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: #ffffff;
+  color: #1a1a1a;
 }
 
-/* Custom scrollbar - Minimalist */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* ── Dark ── */
+html.dark body {
+  background: #111111;
+  color: #e8e8e8;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+html.dark ::-webkit-scrollbar-thumb { background: #2e2e2e; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #404040; }
 
-/* Syntax highlighting - Clean Light Theme */
-.syn-key { color: #0369a1; } /* Blue */
-.syn-str { color: #166534; } /* Green */
-.syn-num { color: #9a3412; } /* Orange */
-.syn-bool { color: #7e22ce; } /* Purple */
-.syn-null { color: #be123c; } /* Red */
+/* Syntax — Light */
+.syn-key  { color: #0550ae; }
+.syn-str  { color: #116329; }
+.syn-num  { color: #953800; }
+.syn-bool { color: #8250df; }
+.syn-null { color: #cf222e; }
 
-/* Textarea placeholder */
-textarea::placeholder { color: #a1a1aa; }
+/* Syntax — Dark */
+html.dark .syn-key  { color: #79c0ff; }
+html.dark .syn-str  { color: #7ee787; }
+html.dark .syn-num  { color: #ffa657; }
+html.dark .syn-bool { color: #d2a8ff; }
+html.dark .syn-null { color: #ff7b72; }
 
-/* Utility classes for border radius to keep it slightly rounded but sharp */
-.rounded-app { border-radius: 6px; }
+textarea::placeholder { color: #c8c8c8; }
+html.dark textarea::placeholder { color: #3a3a3a; }
+
+/* Smooth transitions */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, opacity;
+  transition-duration: 0.12s;
+  transition-timing-function: ease;
+}
+button { transition-property: background-color, border-color, color, opacity, transform, box-shadow; transition-duration: 0.12s; }
