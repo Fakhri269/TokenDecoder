@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Copy, Download, Trash2, Settings, Minimize2, Maximize2,
-  Lock, ChevronRight, FileJson, Edit3, Unlock
+  Lock, ChevronRight, FileJson, Edit3, Unlock, ClipboardPaste, Link
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { decryptToken } from './utils/crypto';
@@ -16,7 +16,13 @@ function getInitialTheme() {
 }
 
 export default function App() {
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('token') || '';
+    }
+    return '';
+  });
   const [json, setJson] = useState('');
   const [parsedObj, setParsedObj] = useState(null);
   const [isMinified, setIsMinified] = useState(false);
@@ -87,6 +93,28 @@ export default function App() {
     setToken(''); setJson(''); setParsedObj(null); setIsMinified(false);
     setMobileTab('input'); textareaRef.current?.focus();
   }, []);
+
+  const handlePaste = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setToken(text);
+      addToast('Pasted from clipboard.');
+    } catch {
+      addToast('Failed to paste. Check permissions.', 'error');
+    }
+  }, [addToast]);
+
+  const handleCopyLink = useCallback(async () => {
+    if (!token.trim()) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('token', token.trim());
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      addToast('Link copied to clipboard.');
+    } catch {
+      addToast('Failed to copy link.', 'error');
+    }
+  }, [token, addToast]);
 
   useEffect(() => {
     const h = e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); handleDecrypt(); } };
@@ -164,7 +192,12 @@ export default function App() {
           {/* Panel label */}
           <div className={`flex items-center justify-between px-5 py-3 border-b ${c.border} ${c.surface}`}>
             <span className={`text-[11px] font-semibold uppercase tracking-widest ${c.textMuted}`}>Input</span>
-            <span className={`text-[11px] font-mono ${c.textMuted}`}>{token.length} chars</span>
+            <div className="flex items-center gap-3">
+              <button onClick={handlePaste} className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
+                <ClipboardPaste size={12} /> Paste
+              </button>
+              <span className={`text-[11px] font-mono ${c.textMuted}`}>{token.length} chars</span>
+            </div>
           </div>
 
           <div className="flex-1 min-h-0 relative flex flex-col">
@@ -228,7 +261,9 @@ export default function App() {
 
             {json ? (
               <div className="flex items-center">
-                <Btn onClick={handleCopy} title="Copy" isDark={isDark}><Copy size={13} /></Btn>
+                <Btn onClick={handleCopyLink} title="Salin Link" isDark={isDark}><Link size={13} /></Btn>
+                <div className={`w-px h-3.5 mx-1 ${isDark ? 'bg-[#333]' : 'bg-[#ddd]'}`} />
+                <Btn onClick={handleCopy} title="Copy JSON" isDark={isDark}><Copy size={13} /></Btn>
                 <Btn onClick={handleDownload} title="Download" isDark={isDark}><Download size={13} /></Btn>
                 <Btn onClick={handleMinify} title={isMinified ? 'Prettify' : 'Minify'} isDark={isDark}>
                   {isMinified ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
