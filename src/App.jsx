@@ -8,6 +8,7 @@ import { decryptToken } from './utils/crypto';
 import OutputViewer from './components/OutputViewer';
 import SettingsDrawer from './components/SettingsDrawer';
 import Toast from './components/Toast';
+import PinScreen from './components/PinScreen';
 
 function findUrlInObject(obj) {
   if (!obj || typeof obj !== 'object') return null;
@@ -44,6 +45,12 @@ export default function App() {
   const [toasts, setToasts] = useState([]);
   const [mobileTab, setMobileTab] = useState('input');
   const [theme, setTheme] = useState(getInitialTheme);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('tokenForgeAuth') === 'true';
+    }
+    return false;
+  });
 
   const [settings, setSettings] = useState({
     key: 'YourSuperSecretKeyForExamOnLan13',
@@ -152,6 +159,22 @@ export default function App() {
     textMuted:  isDark ? 'text-[#666]'    : 'text-[#999]',
     hover:      isDark ? 'hover:bg-[#222]' : 'hover:bg-[#f0f0f0]',
   };
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <PinScreen 
+          onUnlock={() => {
+            setIsAuthenticated(true);
+            sessionStorage.setItem('tokenForgeAuth', 'true');
+          }} 
+          isDark={isDark} 
+          addToast={addToast} 
+        />
+        <Toast toasts={toasts} isDark={isDark} />
+      </>
+    );
+  }
 
   return (
     <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans ${c.bg} ${c.textPrimary}`}>
