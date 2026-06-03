@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Copy, Download, Trash2, Settings, Minimize2, Maximize2,
-  Lock, FileJson, Edit3, Unlock, ClipboardPaste, Link
+  Lock, Unlock, ClipboardPaste, Link
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { decryptToken } from './utils/crypto';
@@ -168,25 +168,27 @@ export default function App() {
   }
 
   const c = {
-    headerBg: isDark ? 'bg-[#1c1c1e]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md',
-    headerBorder: isDark ? 'border-white/10' : 'border-black/5',
+    appBg: isDark ? 'bg-black' : 'bg-[#f2f2f7]',
     cardBg: isDark ? 'bg-[#1c1c1e]' : 'bg-white',
     cardBorder: isDark ? 'border-white/10' : 'border-black/5',
     cardShadow: isDark ? 'shadow-none' : 'shadow-apple',
     text: isDark ? 'text-white' : 'text-[#1d1d1f]',
     textMuted: isDark ? 'text-[#86868b]' : 'text-[#86868b]',
-    btnBg: isDark ? 'bg-[#2c2c2e]' : 'bg-[#f5f5f7]',
-    btnHover: isDark ? 'hover:bg-[#3a3a3c]' : 'hover:bg-[#e8e8ed]',
+    segContainer: isDark ? 'bg-[#1c1c1e]' : 'bg-[#e3e3e8]',
+    segActive: isDark ? 'bg-[#3a3a3c] text-white shadow-sm' : 'bg-white text-black shadow-sm',
+    segInactive: isDark ? 'text-[#86868b]' : 'text-[#86868b]',
     primaryBg: isDark ? 'bg-[#0a84ff]' : 'bg-[#0071e3]',
     primaryHover: isDark ? 'hover:bg-[#007aff]' : 'hover:bg-[#0077ed]',
+    glassBar: isDark ? 'bg-[#1c1c1e]/80 border-white/10' : 'bg-white/80 border-black/5',
   };
 
   return (
-    <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans`}>
+    <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans ${c.appBg}`}>
+      
       {/* ══ HEADER ══ */}
-      <header className={`flex items-center justify-between px-6 h-16 border-b shrink-0 sticky top-0 z-10 ${c.headerBg} ${c.headerBorder}`}>
+      <header className={`flex items-center justify-between px-6 py-4 shrink-0`}>
         <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center ${isDark ? 'bg-[#2c2c2e]' : 'bg-[#f5f5f7]'}`}>
+          <div className={`w-9 h-9 rounded-2xl flex items-center justify-center ${c.cardBg} ${c.cardShadow} ${c.cardBorder} border`}>
             <Lock size={16} className={isDark ? 'text-[#0a84ff]' : 'text-[#0071e3]'} />
           </div>
           <span className={`font-semibold text-[17px] tracking-tight ${c.text}`}>
@@ -196,50 +198,48 @@ export default function App() {
 
         <button
           onClick={() => setSettingsOpen(true)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-[14px] font-medium transition-all ${c.btnBg} ${c.btnHover} ${c.text}`}
+          className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${c.cardBg} ${c.cardBorder} border ${c.cardShadow} ${c.text}`}
         >
           <Settings size={16} />
-          <span className="hidden sm:inline">Config</span>
         </button>
       </header>
 
-      {/* ══ MOBILE TABS ══ */}
-      <div className={`md:hidden flex shrink-0 border-b p-2 gap-2 ${c.cardBg} ${c.headerBorder}`}>
-        {[
-          { key: 'input', label: 'Input', icon: <Edit3 size={14} /> },
-          { key: 'output', label: 'Result', icon: <FileJson size={14} /> },
-        ].map(({ key, label, icon }) => (
-          <button
-            key={key}
-            onClick={() => setMobileTab(key)}
-            className={`flex-1 py-2.5 rounded-xl text-[14px] font-medium flex justify-center items-center gap-2 transition-all ${
-              mobileTab === key
-                ? `${c.primaryBg} text-white shadow-md`
-                : `${c.btnBg} ${c.textMuted}`
-            }`}
-          >
-            {icon}{label}
-          </button>
-        ))}
+      {/* ══ MOBILE SEGMENTED CONTROL ══ */}
+      <div className="md:hidden px-4 pb-4 shrink-0">
+        <div className={`flex p-1 rounded-lg ${c.segContainer}`}>
+          {[
+            { key: 'input', label: 'Input' },
+            { key: 'output', label: 'Result' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setMobileTab(key)}
+              className={`flex-1 py-1.5 text-[13px] font-semibold rounded-md transition-all ${
+                mobileTab === key ? c.segActive : c.segInactive
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ══ MAIN LAYOUT ══ */}
-      <div className="flex-1 flex flex-col md:flex-row p-4 md:p-6 gap-6 overflow-hidden min-h-0 relative z-0">
+      <div className="flex-1 flex flex-col md:flex-row px-4 pb-[88px] md:pb-6 gap-6 md:gap-6 overflow-hidden min-h-0 max-w-[1400px] mx-auto w-full">
         
         {/* INPUT PANEL */}
         <div
-          className={`${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 rounded-[24px] overflow-hidden border transition-all ${c.cardBg} ${c.cardBorder} ${c.cardShadow}`}
+          className={`${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 rounded-[20px] overflow-hidden ${c.cardBg} ${c.cardShadow}`}
           onDragOver={e => e.preventDefault()}
           onDrop={handleDrop}
         >
-          {/* Panel header */}
-          <div className={`flex items-center justify-between px-6 py-4 border-b ${c.cardBorder}`}>
-            <span className={`text-[12px] font-bold uppercase tracking-[0.1em] ${c.textMuted}`}>Input Token</span>
+          {/* Panel Header */}
+          <div className={`flex items-center justify-between px-6 py-3 border-b ${c.cardBorder}`}>
+            <span className={`text-[13px] font-semibold tracking-tight ${c.text}`}>Input Token</span>
             <div className="flex items-center gap-4">
-              <button onClick={handlePaste} className={`flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.05em] transition-colors ${isDark ? 'text-[#0a84ff] hover:text-[#409cff]' : 'text-[#0071e3] hover:text-[#0077ed]'}`}>
+              <button onClick={handlePaste} className={`flex items-center gap-1.5 text-[13px] font-semibold transition-colors ${isDark ? 'text-[#0a84ff] hover:text-[#409cff]' : 'text-[#0071e3] hover:text-[#0077ed]'}`}>
                 <ClipboardPaste size={14} /> Paste
               </button>
-              <span className={`text-[12px] font-medium opacity-70 ${c.textMuted}`}>{token.length} chars</span>
             </div>
           </div>
 
@@ -248,31 +248,28 @@ export default function App() {
               ref={textareaRef}
               value={token}
               onChange={e => setToken(e.target.value)}
-              placeholder="Paste encrypted Base64 token here…"
+              placeholder="Paste encrypted Base64 token here..."
               spellCheck={false}
-              className={`flex-1 w-full resize-none bg-transparent font-mono text-[14px] leading-relaxed p-6 outline-none pb-24 ${c.text}`}
+              className={`flex-1 w-full resize-none bg-transparent font-mono text-[14px] leading-relaxed p-6 outline-none pb-20 ${c.text}`}
             />
-
-            {/* Bottom bar */}
-            <div className={`absolute bottom-0 left-0 right-0 px-6 py-4 flex items-center justify-between backdrop-blur-xl border-t ${isDark ? 'bg-[#1c1c1e]/80 border-white/10' : 'bg-white/80 border-black/5'}`}>
-              <span className={`hidden md:block text-[12px] font-medium opacity-70 ${c.textMuted}`}>
-                Press <kbd className="font-sans px-1.5 py-0.5 rounded border border-current opacity-70">Ctrl+Enter</kbd>
+            {/* Desktop-only internal Decrypt button */}
+            <div className={`hidden md:flex absolute bottom-0 left-0 right-0 p-4 justify-between items-center bg-gradient-to-t from-${isDark ? '[#1c1c1e]' : 'white'} via-${isDark ? '[#1c1c1e]' : 'white'}/90 to-transparent pt-10`}>
+              <span className={`text-[12px] font-medium opacity-70 ${c.textMuted}`}>
+                {token.length} characters
               </span>
               <button
                 onClick={handleDecrypt}
                 disabled={loading || !token.trim()}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full text-[15px] font-semibold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none text-white ${c.primaryBg} ${c.primaryHover}`}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[14px] font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-white ${c.primaryBg} ${c.primaryHover}`}
               >
                 <AnimatePresence mode="wait">
                   {loading ? (
                     <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Decrypting
                     </motion.span>
                   ) : (
                     <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                      <Unlock size={16} />
-                      Decrypt
+                      <Unlock size={14} /> Decrypt
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -282,19 +279,15 @@ export default function App() {
         </div>
 
         {/* OUTPUT PANEL */}
-        <div className={`${mobileTab === 'output' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 rounded-[24px] overflow-hidden border transition-all ${c.cardBg} ${c.cardBorder} ${c.cardShadow}`}>
-          {/* Panel header */}
-          <div className={`flex items-center justify-between px-6 py-4 border-b shrink-0 ${c.cardBorder}`}>
+        <div className={`${mobileTab === 'output' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 rounded-[20px] overflow-hidden ${c.cardBg} ${c.cardShadow}`}>
+          {/* Panel Header */}
+          <div className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${c.cardBorder}`}>
             <div className="flex items-center gap-3">
-              <span className={`text-[12px] font-bold uppercase tracking-[0.1em] ${c.textMuted}`}>Result</span>
+              <span className={`text-[13px] font-semibold tracking-tight ${c.text}`}>Result</span>
               {json && (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className={`text-[11px] font-semibold px-2 py-1 rounded-md ${isDark ? 'bg-[#2c2c2e] text-[#a1a1a6]' : 'bg-[#f5f5f7] text-[#86868b]'}`}
-                >
+                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${isDark ? 'bg-[#2c2c2e] text-[#a1a1a6]' : 'bg-[#f5f5f7] text-[#86868b]'}`}>
                   {json.split('\n').length} lines
-                </motion.span>
+                </span>
               )}
             </div>
 
@@ -313,10 +306,33 @@ export default function App() {
             ) : <div className="h-8" />}
           </div>
 
-          <div className="flex-1 min-h-0 overflow-auto bg-[#fafafa] dark:bg-[#151515]">
+          <div className="flex-1 min-h-0 overflow-auto bg-transparent">
             <OutputViewer json={json} isEmpty={!json && !loading} isDark={isDark} />
           </div>
         </div>
+      </div>
+
+      {/* ══ MOBILE BOTTOM FLOATING BAR ══ */}
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 p-4 border-t backdrop-blur-xl ${c.glassBar} z-20`}>
+        <button
+          onClick={handleDecrypt}
+          disabled={loading || !token.trim()}
+          className={`w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-[14px] text-[15px] font-semibold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-white ${c.primaryBg} ${c.primaryHover}`}
+        >
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Decrypting...
+              </motion.span>
+            ) : (
+              <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                <Unlock size={18} />
+                Decrypt Token
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
       </div>
 
       <SettingsDrawer
@@ -337,7 +353,7 @@ function Btn({ onClick, children, title, isDark, danger }) {
     <button
       onClick={onClick}
       title={title}
-      className={`p-2 rounded-xl transition-all ${
+      className={`p-1.5 rounded-lg transition-all ${
         danger
           ? 'text-red-500 hover:bg-red-500/10'
           : isDark 
