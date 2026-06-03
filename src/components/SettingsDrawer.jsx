@@ -10,13 +10,18 @@ export default function SettingsDrawer({ isOpen, onClose, settings, onSave, isDa
 
   const handleSave = () => onSave({ key: keyVal, iv: ivVal });
 
-  const bg     = isDark ? 'bg-[#141414]' : 'bg-white';
-  const border = isDark ? 'border-[#2a2a2a]' : 'border-[#e8e8e8]';
-  const input  = isDark
-    ? 'bg-[#1e1e1e] border-[#2e2e2e] text-[#e8e8e8] focus:border-[#555] placeholder:text-[#3a3a3a]'
-    : 'bg-[#f7f7f7] border-[#e0e0e0] text-[#1a1a1a] focus:border-[#aaa] placeholder:text-[#ccc]';
-  const muted  = isDark ? 'text-[#555]' : 'text-[#aaa]';
-  const label  = isDark ? 'text-[#aaa]' : 'text-[#555]';
+  const c = {
+    bg: isDark ? 'bg-[#1c1c1e]' : 'bg-[#ffffff]',
+    border: isDark ? 'border-white/10' : 'border-black/5',
+    inputBg: isDark ? 'bg-[#2c2c2e]' : 'bg-[#f5f5f7]',
+    inputFocus: isDark ? 'focus:border-[#0a84ff] focus:ring-1 focus:ring-[#0a84ff]' : 'focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3]',
+    text: isDark ? 'text-white' : 'text-[#1d1d1f]',
+    textMuted: isDark ? 'text-[#86868b]' : 'text-[#86868b]',
+    btnBg: isDark ? 'bg-[#2c2c2e]' : 'bg-[#f5f5f7]',
+    btnHover: isDark ? 'hover:bg-[#3a3a3c]' : 'hover:bg-[#e8e8ed]',
+    primaryBg: isDark ? 'bg-[#0a84ff]' : 'bg-[#0071e3]',
+    primaryHover: isDark ? 'hover:bg-[#007aff]' : 'hover:bg-[#0077ed]',
+  };
 
   return (
     <AnimatePresence>
@@ -26,62 +31,58 @@ export default function SettingsDrawer({ isOpen, onClose, settings, onSave, isDa
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
           />
 
           <motion.aside
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'tween', ease: [0.32, 0.72, 0, 1], duration: 0.22 }}
-            className={`fixed top-0 right-0 w-[380px] max-w-[92vw] h-full border-l z-50 flex flex-col ${bg} ${border}`}
+            transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+            className={`fixed top-0 right-0 w-[400px] max-w-[92vw] h-full shadow-2xl z-50 flex flex-col ${c.bg} ${c.border}`}
           >
             {/* Header */}
-            <div className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
-              <span className={`text-[15px] font-semibold tracking-[-0.2px] ${isDark ? 'text-[#e8e8e8]' : 'text-[#1a1a1a]'}`}>
+            <div className={`flex items-center justify-between px-8 py-6 border-b ${c.border}`}>
+              <span className={`text-[17px] font-bold tracking-tight ${c.text}`}>
                 Settings
               </span>
               <button
                 onClick={onClose}
-                className={`p-1.5 rounded-md transition-colors ${muted} ${isDark ? 'hover:bg-[#222] hover:text-[#ccc]' : 'hover:bg-[#f0f0f0] hover:text-[#333]'}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${c.btnBg} ${c.btnHover} ${c.textMuted}`}
               >
-                <X size={15} />
+                <X size={16} />
               </button>
             </div>
 
             {/* Body */}
-            <div className="flex-1 px-6 py-6 space-y-8 overflow-y-auto">
-
+            <div className="flex-1 px-8 py-8 space-y-8 overflow-y-auto">
+              
               {/* Appearance */}
               <div>
-                <p className={`text-[10px] font-bold uppercase tracking-widest mb-4 ${muted}`}>Appearance</p>
-                <div className={`flex items-center justify-between py-3 px-4 rounded-xl border ${isDark ? 'border-[#2a2a2a] bg-[#1a1a1a]' : 'border-[#ebebeb] bg-[#f7f7f7]'}`}>
+                <p className={`text-[12px] font-bold uppercase tracking-widest mb-4 ${c.textMuted}`}>Appearance</p>
+                <div className={`flex items-center justify-between p-4 rounded-[16px] border ${c.border} ${isDark ? 'bg-[#1c1c1e]' : 'bg-white'}`}>
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-[#252525]' : 'bg-white border border-[#e8e8e8]'}`}>
-                      {isDark ? <Moon size={14} className={muted} /> : <Sun size={14} className="text-[#aaa]" />}
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.btnBg}`}>
+                      {isDark ? <Moon size={16} className={c.textMuted} /> : <Sun size={16} className={c.textMuted} />}
                     </div>
                     <div>
-                      <p className={`text-[13px] font-medium ${isDark ? 'text-[#ccc]' : 'text-[#444]'}`}>
+                      <p className={`text-[14px] font-semibold ${c.text}`}>
                         {isDark ? 'Dark Mode' : 'Light Mode'}
                       </p>
-                      <p className={`text-[11px] ${muted}`}>Toggle interface theme</p>
+                      <p className={`text-[12px] ${c.textMuted}`}>Toggle interface theme</p>
                     </div>
                   </div>
 
-                  {/* Toggle */}
                   <button
                     onClick={onToggleTheme}
-                    role="switch"
-                    aria-checked={isDark}
-                    className={`relative w-10 h-[22px] rounded-full transition-colors ${isDark ? 'bg-[#e8e8e8]' : 'bg-[#ccc]'}`}
+                    className={`relative w-12 h-7 rounded-full transition-colors ${isDark ? 'bg-[#34c759]' : 'bg-[#e5e5ea]'}`}
                   >
                     <motion.span
                       layout
                       transition={{ type: 'spring', damping: 24, stiffness: 400 }}
-                      className={`absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-sm ${isDark ? 'left-[22px]' : 'left-[3px]'}`}
-                      style={{ backgroundColor: isDark ? '#111' : '#fff' }}
+                      className={`absolute top-[2px] w-6 h-6 rounded-full bg-white shadow-sm ${isDark ? 'left-[22px]' : 'left-[2px]'}`}
                     />
                   </button>
                 </div>
@@ -89,39 +90,39 @@ export default function SettingsDrawer({ isOpen, onClose, settings, onSave, isDa
 
               {/* Encryption */}
               <div>
-                <p className={`text-[10px] font-bold uppercase tracking-widest mb-4 ${muted}`}>Encryption</p>
+                <p className={`text-[12px] font-bold uppercase tracking-widest mb-4 ${c.textMuted}`}>Encryption</p>
                 <div className="space-y-5">
                   <div>
-                    <label className={`block text-[12px] font-medium mb-1.5 ${label}`}>AES Key</label>
+                    <label className={`block text-[13px] font-semibold mb-2 ${c.text}`}>AES Key</label>
                     <input
                       type="text"
                       value={keyVal}
                       onChange={e => setKeyVal(e.target.value)}
                       maxLength={32}
                       spellCheck={false}
-                      className={`w-full px-3 py-2.5 border rounded-lg font-mono text-[12px] outline-none transition-all ${input}`}
+                      className={`w-full px-4 py-3.5 border rounded-2xl font-mono text-[13px] outline-none transition-all ${c.inputBg} ${c.border} ${c.text} ${c.inputFocus}`}
                     />
-                    <div className="flex justify-between mt-1.5">
-                      <span className={`text-[11px] ${muted}`}>32 characters required</span>
-                      <span className={`text-[11px] font-mono ${keyVal.length === 32 ? 'text-emerald-500' : 'text-red-400'}`}>
+                    <div className="flex justify-between mt-2 px-1">
+                      <span className={`text-[12px] ${c.textMuted}`}>32 characters required</span>
+                      <span className={`text-[12px] font-mono font-medium ${keyVal.length === 32 ? (isDark ? 'text-[#32d74b]' : 'text-[#34c759]') : (isDark ? 'text-[#ff453a]' : 'text-[#ff3b30]')}`}>
                         {keyVal.length}/32
                       </span>
                     </div>
                   </div>
 
                   <div>
-                    <label className={`block text-[12px] font-medium mb-1.5 ${label}`}>IV (16 characters)</label>
+                    <label className={`block text-[13px] font-semibold mb-2 ${c.text}`}>Initialization Vector (IV)</label>
                     <input
                       type="text"
                       value={ivVal}
                       onChange={e => setIvVal(e.target.value)}
                       maxLength={16}
                       spellCheck={false}
-                      className={`w-full px-3 py-2.5 border rounded-lg font-mono text-[12px] outline-none transition-all ${input}`}
+                      className={`w-full px-4 py-3.5 border rounded-2xl font-mono text-[13px] outline-none transition-all ${c.inputBg} ${c.border} ${c.text} ${c.inputFocus}`}
                     />
-                    <div className="flex justify-between mt-1.5">
-                      <span className={`text-[11px] ${muted}`}>16 characters required</span>
-                      <span className={`text-[11px] font-mono ${ivVal.length === 16 ? 'text-emerald-500' : 'text-red-400'}`}>
+                    <div className="flex justify-between mt-2 px-1">
+                      <span className={`text-[12px] ${c.textMuted}`}>16 characters required</span>
+                      <span className={`text-[12px] font-mono font-medium ${ivVal.length === 16 ? (isDark ? 'text-[#32d74b]' : 'text-[#34c759]') : (isDark ? 'text-[#ff453a]' : 'text-[#ff3b30]')}`}>
                         {ivVal.length}/16
                       </span>
                     </div>
@@ -131,18 +132,16 @@ export default function SettingsDrawer({ isOpen, onClose, settings, onSave, isDa
             </div>
 
             {/* Footer */}
-            <div className={`px-6 py-5 border-t ${border}`}>
+            <div className={`px-8 py-6 border-t ${c.border}`}>
               <button
                 onClick={handleSave}
                 disabled={keyVal.length !== 32 || ivVal.length !== 16}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                  isDark ? 'bg-[#e8e8e8] text-[#111] hover:bg-white' : 'bg-[#1a1a1a] text-white hover:bg-[#333]'
-                }`}
+                className={`w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-[15px] font-semibold transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none text-white ${c.primaryBg} ${c.primaryHover}`}
               >
-                <Save size={14} />
+                <Save size={16} />
                 Save Changes
               </button>
-              <div className={`mt-4 text-center text-[10px] tracking-wider uppercase font-semibold ${muted}`}>
+              <div className={`mt-5 text-center text-[10px] tracking-widest uppercase font-bold ${c.textMuted} opacity-60`}>
                 Token Forge — Created by Fakhri
               </div>
             </div>

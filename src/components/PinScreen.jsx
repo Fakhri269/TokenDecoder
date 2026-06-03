@@ -4,7 +4,7 @@ import { Lock, Delete } from 'lucide-react';
 
 const CORRECT_PIN = '789012';
 
-export default function PinScreen({ onUnlock, addToast }) {
+export default function PinScreen({ onUnlock, isDark, addToast }) {
   const [pin, setPin] = useState('');
   const [shake, setShake] = useState(false);
   const [error, setError] = useState(false);
@@ -46,147 +46,75 @@ export default function PinScreen({ onUnlock, addToast }) {
     [null,'0','del'],
   ];
 
-  return (
-    <div
-      className="fixed inset-0 flex items-center justify-center"
-      style={{
-        background: 'linear-gradient(135deg, #0f0f1a 0%, #12121f 50%, #0a0a14 100%)',
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}
-    >
-      {/* Background blobs */}
-      <div style={{
-        position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none',
-      }}>
-        <div style={{
-          position: 'absolute', top: '10%', left: '20%',
-          width: 320, height: 320, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)',
-          filter: 'blur(40px)',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '15%', right: '15%',
-          width: 280, height: 280, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 70%)',
-          filter: 'blur(40px)',
-        }} />
-      </div>
+  const c = {
+    bg: isDark ? 'bg-black' : 'bg-[#fbfbfe]',
+    cardBg: isDark ? 'bg-[#1c1c1e]' : 'bg-white',
+    text: isDark ? 'text-white' : 'text-[#1d1d1f]',
+    textMuted: isDark ? 'text-[#86868b]' : 'text-[#86868b]',
+    keyBg: isDark ? 'bg-[#2c2c2e]' : 'bg-[#f5f5f7]',
+    keyHover: isDark ? 'hover:bg-[#3a3a3c]' : 'hover:bg-[#e8e8ed]',
+    shadow: isDark ? 'shadow-none border border-white/10' : 'shadow-apple border border-black/5',
+  };
 
+  return (
+    <div className={`fixed inset-0 flex items-center justify-center font-sans ${c.bg}`}>
       <motion.div
-        animate={shake ? { x: [-10, 10, -10, 10, -6, 6, -2, 2, 0] } : { x: 0 }}
-        transition={{ duration: 0.5 }}
-        style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: 340,
-          margin: '0 16px',
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 28,
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          padding: '40px 32px 36px',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
-        }}
+        animate={shake ? { x: [-10, 10, -10, 10, -5, 5, 0] } : { x: 0 }}
+        transition={{ duration: 0.4 }}
+        className={`w-full max-w-[340px] mx-4 p-8 pt-10 pb-8 rounded-[32px] flex flex-col items-center relative overflow-hidden ${c.cardBg} ${c.shadow}`}
       >
-        {/* Logo */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: 16,
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 16,
-            boxShadow: '0 8px 32px rgba(99,102,241,0.35)',
-          }}>
-            <Lock size={22} color="white" />
-          </div>
-          <h1 style={{
-            color: '#f1f1f5', fontSize: 22, fontWeight: 700,
-            letterSpacing: '-0.5px', margin: 0, marginBottom: 6,
-          }}>
-            Token Forge
-          </h1>
-          <p style={{
-            color: 'rgba(255,255,255,0.35)', fontSize: 13, margin: 0,
-            textAlign: 'center',
-          }}>
-            Enter your PIN to continue
-          </p>
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${isDark ? 'bg-[#2c2c2e]' : 'bg-[#f5f5f7]'}`}>
+          <Lock size={24} className={isDark ? 'text-[#0a84ff]' : 'text-[#0071e3]'} />
         </div>
+        
+        <h1 className={`text-xl font-bold tracking-tight mb-1 ${c.text}`}>
+          Token Forge
+        </h1>
+        <p className={`text-[13px] text-center mb-8 ${c.textMuted}`}>
+          Enter your PIN to continue
+        </p>
 
         {/* PIN Dots */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+        <div className="flex justify-center gap-3.5 mb-8 h-4 items-center">
           {[0,1,2,3,4,5].map(i => {
             const filled = i < pin.length;
-            const isError = error;
             return (
               <motion.div
                 key={i}
-                animate={filled ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+                animate={filled ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                 transition={{ duration: 0.2 }}
-                style={{
-                  width: 12, height: 12, borderRadius: '50%',
-                  background: filled
-                    ? isError
-                      ? 'linear-gradient(135deg, #ef4444, #f87171)'
-                      : 'linear-gradient(135deg, #6366f1, #8b5cf6)'
-                    : 'rgba(255,255,255,0.12)',
-                  border: filled ? 'none' : '1.5px solid rgba(255,255,255,0.2)',
-                  transition: 'all 0.15s ease',
-                  boxShadow: filled && !isError ? '0 0 10px rgba(99,102,241,0.5)' : 'none',
-                }}
+                className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-200 ${
+                  filled 
+                    ? error 
+                      ? 'bg-red-500 border-red-500' 
+                      : (isDark ? 'bg-[#0a84ff] border-[#0a84ff]' : 'bg-[#0071e3] border-[#0071e3]')
+                    : (isDark ? 'bg-transparent border-[#3a3a3c]' : 'bg-transparent border-[#e5e5ea]')
+                }`}
               />
             );
           })}
         </div>
 
         {/* Keypad */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div className="grid grid-cols-3 gap-3 w-full px-2">
           {keys.flat().map((k, idx) => {
             if (k === null) return <div key={idx} />;
             if (k === 'del') return (
               <motion.button
                 key="del"
-                whileTap={{ scale: 0.88 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={handleDelete}
-                style={{
-                  height: 60, borderRadius: 14, border: 'none',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'rgba(255,255,255,0.5)',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                className={`h-14 rounded-2xl flex items-center justify-center transition-colors ${c.keyBg} ${c.keyHover} ${c.text}`}
               >
-                <Delete size={18} />
+                <Delete size={20} strokeWidth={2.5} className={c.textMuted} />
               </motion.button>
             );
             return (
               <motion.button
                 key={k}
-                whileTap={{ scale: 0.88 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => handleKey(k)}
-                style={{
-                  height: 60, borderRadius: 14, border: '1px solid rgba(255,255,255,0.07)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#e8e8ef',
-                  fontSize: 20, fontWeight: 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  letterSpacing: '0',
-                  fontFamily: 'inherit',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(99,102,241,0.15)';
-                  e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)';
-                  e.currentTarget.style.color = '#a5b4fc';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
-                  e.currentTarget.style.color = '#e8e8ef';
-                }}
+                className={`h-14 rounded-2xl text-[22px] font-semibold flex items-center justify-center transition-colors ${c.keyBg} ${c.keyHover} ${c.text}`}
               >
                 {k}
               </motion.button>
@@ -194,30 +122,8 @@ export default function PinScreen({ onUnlock, addToast }) {
           })}
         </div>
 
-        {/* Error hint */}
-        <AnimatePresence>
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              style={{
-                textAlign: 'center', color: '#f87171', fontSize: 12,
-                marginTop: 20, marginBottom: 0,
-              }}
-            >
-              Wrong PIN. Please try again.
-            </motion.p>
-          )}
-        </AnimatePresence>
-
-        {/* Watermark */}
-        <p style={{
-          textAlign: 'center', color: 'rgba(255,255,255,0.15)',
-          fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase',
-          marginTop: error ? 12 : 28, marginBottom: 0,
-        }}>
-          Token Forge — Created by Fakhri
+        <p className={`mt-8 text-[10px] font-semibold tracking-widest uppercase ${c.textMuted} opacity-60`}>
+          Created by Fakhri
         </p>
       </motion.div>
     </div>

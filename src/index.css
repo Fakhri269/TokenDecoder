@@ -1,54 +1,75 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @theme {
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Light Theme Colors (Apple/Stripe inspired) */
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f7f9fc;
+  --color-surface-3: #f1f5f9;
+  --color-surface-4: #e2e8f0;
+  --color-border: rgba(0, 0, 0, 0.06);
+  --color-border-hover: rgba(0, 0, 0, 0.12);
+  --color-accent: #0071e3; /* Apple Blue */
+  --color-accent-light: #47a1ff;
+  
+  /* Dark Theme Colors */
+  --color-dark-surface-1: #1c1c1e; /* Apple Dark Mode */
+  --color-dark-surface-2: #2c2c2e;
+  --color-dark-surface-3: #3a3a3c;
+  --color-dark-border: rgba(255, 255, 255, 0.1);
+  --color-dark-border-hover: rgba(255, 255, 255, 0.2);
 }
 
-html { font-family: var(--font-sans); }
+html {
+  font-family: var(--font-sans);
+}
 
-/* ── Light ── */
 body {
-  background: #ffffff;
-  color: #1a1a1a;
+  background: #fbfbfe;
+  color: #1d1d1f; /* Apple Text Color */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Dark ── */
 html.dark body {
-  background: #111111;
-  color: #e8e8e8;
+  background: #000000;
+  color: #f5f5f7;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-html.dark ::-webkit-scrollbar-thumb { background: #2e2e2e; }
-html.dark ::-webkit-scrollbar-thumb:hover { background: #404040; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 
-/* Syntax — Light */
-.syn-key  { color: #0550ae; }
-.syn-str  { color: #116329; }
-.syn-num  { color: #953800; }
-.syn-bool { color: #8250df; }
-.syn-null { color: #cf222e; }
+/* Syntax highlighting */
+.syn-key { color: #635bff; font-weight: 500; } /* Stripe Blurple */
+.syn-str { color: #008a52; } /* Dark Green */
+.syn-num { color: #d946ef; } /* Pink/Purple */
+.syn-bool { color: #0071e3; font-weight: 600; }
+.syn-null { color: #ef4444; font-weight: 600; }
 
-/* Syntax — Dark */
-html.dark .syn-key  { color: #79c0ff; }
-html.dark .syn-str  { color: #7ee787; }
-html.dark .syn-num  { color: #ffa657; }
-html.dark .syn-bool { color: #d2a8ff; }
-html.dark .syn-null { color: #ff7b72; }
+html.dark .syn-key { color: #a5b4fc; }
+html.dark .syn-str { color: #6ee7b7; }
+html.dark .syn-num { color: #fcd34d; }
+html.dark .syn-bool { color: #93c5fd; }
+html.dark .syn-null { color: #fca5a5; }
 
-textarea::placeholder { color: #c8c8c8; }
-html.dark textarea::placeholder { color: #3a3a3a; }
+/* Textarea placeholder */
+textarea::placeholder { color: #a1a1aa; }
+html.dark textarea::placeholder { color: #52525b; }
 
-/* Smooth transitions */
-*, *::before, *::after {
-  transition-property: background-color, border-color, color, opacity;
-  transition-duration: 0.12s;
-  transition-timing-function: ease;
+/* Custom Utilities for shadows */
+@layer utilities {
+  .shadow-apple {
+    box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.05), 0 2px 6px 0 rgba(0, 0, 0, 0.03);
+  }
+  .shadow-apple-hover {
+    box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.08), 0 4px 12px 0 rgba(0, 0, 0, 0.04);
+  }
 }
-button { transition-property: background-color, border-color, color, opacity, transform, box-shadow; transition-duration: 0.12s; }

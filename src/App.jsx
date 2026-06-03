@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Copy, Download, Trash2, Settings, Minimize2, Maximize2,
-  Lock, ChevronRight, FileJson, Edit3, Unlock, ClipboardPaste, Link
+  Lock, FileJson, Edit3, Unlock, ClipboardPaste, Link
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { decryptToken } from './utils/crypto';
@@ -151,15 +151,6 @@ export default function App() {
     if (file) { const r = new FileReader(); r.onload = () => setToken(r.result); r.readAsText(file); }
   }, []);
 
-  const c = {
-    bg:         isDark ? 'bg-[#111111]'   : 'bg-white',
-    surface:    isDark ? 'bg-[#1a1a1a]'   : 'bg-[#f7f7f7]',
-    border:     isDark ? 'border-[#2a2a2a]' : 'border-[#e8e8e8]',
-    textPrimary:isDark ? 'text-[#e8e8e8]' : 'text-[#1a1a1a]',
-    textMuted:  isDark ? 'text-[#666]'    : 'text-[#999]',
-    hover:      isDark ? 'hover:bg-[#222]' : 'hover:bg-[#f0f0f0]',
-  };
-
   if (!isAuthenticated) {
     return (
       <>
@@ -176,42 +167,55 @@ export default function App() {
     );
   }
 
-  return (
-    <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans ${c.bg} ${c.textPrimary}`}>
+  const c = {
+    headerBg: isDark ? 'bg-[#1c1c1e]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md',
+    headerBorder: isDark ? 'border-white/10' : 'border-black/5',
+    cardBg: isDark ? 'bg-[#1c1c1e]' : 'bg-white',
+    cardBorder: isDark ? 'border-white/10' : 'border-black/5',
+    cardShadow: isDark ? 'shadow-none' : 'shadow-apple',
+    text: isDark ? 'text-white' : 'text-[#1d1d1f]',
+    textMuted: isDark ? 'text-[#86868b]' : 'text-[#86868b]',
+    btnBg: isDark ? 'bg-[#2c2c2e]' : 'bg-[#f5f5f7]',
+    btnHover: isDark ? 'hover:bg-[#3a3a3c]' : 'hover:bg-[#e8e8ed]',
+    primaryBg: isDark ? 'bg-[#0a84ff]' : 'bg-[#0071e3]',
+    primaryHover: isDark ? 'hover:bg-[#007aff]' : 'hover:bg-[#0077ed]',
+  };
 
+  return (
+    <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans`}>
       {/* ══ HEADER ══ */}
-      <header className={`flex items-center justify-between px-6 h-[56px] border-b shrink-0 ${c.border} ${c.bg}`}>
+      <header className={`flex items-center justify-between px-6 h-16 border-b shrink-0 sticky top-0 z-10 ${c.headerBg} ${c.headerBorder}`}>
         <div className="flex items-center gap-3">
-          <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${isDark ? 'bg-[#e8e8e8]' : 'bg-[#1a1a1a]'}`}>
-            <Lock size={13} className={isDark ? 'text-[#111]' : 'text-white'} />
+          <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center ${isDark ? 'bg-[#2c2c2e]' : 'bg-[#f5f5f7]'}`}>
+            <Lock size={16} className={isDark ? 'text-[#0a84ff]' : 'text-[#0071e3]'} />
           </div>
-          <span className={`font-semibold text-[15px] tracking-[-0.3px] ${c.textPrimary}`}>
+          <span className={`font-semibold text-[17px] tracking-tight ${c.text}`}>
             Token Forge
           </span>
         </div>
 
         <button
           onClick={() => setSettingsOpen(true)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${c.textMuted} ${c.hover}`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-[14px] font-medium transition-all ${c.btnBg} ${c.btnHover} ${c.text}`}
         >
-          <Settings size={14} />
+          <Settings size={16} />
           <span className="hidden sm:inline">Config</span>
         </button>
       </header>
 
       {/* ══ MOBILE TABS ══ */}
-      <div className={`md:hidden flex shrink-0 border-b ${c.border} ${c.bg}`}>
+      <div className={`md:hidden flex shrink-0 border-b p-2 gap-2 ${c.cardBg} ${c.headerBorder}`}>
         {[
-          { key: 'input', label: 'Input', icon: <Edit3 size={13} /> },
-          { key: 'output', label: 'Result', icon: <FileJson size={13} /> },
+          { key: 'input', label: 'Input', icon: <Edit3 size={14} /> },
+          { key: 'output', label: 'Result', icon: <FileJson size={14} /> },
         ].map(({ key, label, icon }) => (
           <button
             key={key}
             onClick={() => setMobileTab(key)}
-            className={`flex-1 py-2.5 text-[13px] font-medium flex justify-center items-center gap-1.5 border-b-2 transition-colors ${
+            className={`flex-1 py-2.5 rounded-xl text-[14px] font-medium flex justify-center items-center gap-2 transition-all ${
               mobileTab === key
-                ? isDark ? 'border-[#e8e8e8] text-[#e8e8e8]' : 'border-[#1a1a1a] text-[#1a1a1a]'
-                : `border-transparent ${c.textMuted}`
+                ? `${c.primaryBg} text-white shadow-md`
+                : `${c.btnBg} ${c.textMuted}`
             }`}
           >
             {icon}{label}
@@ -220,22 +224,22 @@ export default function App() {
       </div>
 
       {/* ══ MAIN LAYOUT ══ */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
-
+      <div className="flex-1 flex flex-col md:flex-row p-4 md:p-6 gap-6 overflow-hidden min-h-0 relative z-0">
+        
         {/* INPUT PANEL */}
         <div
-          className={`${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 border-r ${c.border}`}
+          className={`${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 rounded-[24px] overflow-hidden border transition-all ${c.cardBg} ${c.cardBorder} ${c.cardShadow}`}
           onDragOver={e => e.preventDefault()}
           onDrop={handleDrop}
         >
-          {/* Panel label */}
-          <div className={`flex items-center justify-between px-5 py-3 border-b ${c.border} ${c.surface}`}>
-            <span className={`text-[11px] font-semibold uppercase tracking-widest ${c.textMuted}`}>Input</span>
-            <div className="flex items-center gap-3">
-              <button onClick={handlePaste} className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
-                <ClipboardPaste size={12} /> Paste
+          {/* Panel header */}
+          <div className={`flex items-center justify-between px-6 py-4 border-b ${c.cardBorder}`}>
+            <span className={`text-[12px] font-bold uppercase tracking-[0.1em] ${c.textMuted}`}>Input Token</span>
+            <div className="flex items-center gap-4">
+              <button onClick={handlePaste} className={`flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.05em] transition-colors ${isDark ? 'text-[#0a84ff] hover:text-[#409cff]' : 'text-[#0071e3] hover:text-[#0077ed]'}`}>
+                <ClipboardPaste size={14} /> Paste
               </button>
-              <span className={`text-[11px] font-mono ${c.textMuted}`}>{token.length} chars</span>
+              <span className={`text-[12px] font-medium opacity-70 ${c.textMuted}`}>{token.length} chars</span>
             </div>
           </div>
 
@@ -246,32 +250,28 @@ export default function App() {
               onChange={e => setToken(e.target.value)}
               placeholder="Paste encrypted Base64 token here…"
               spellCheck={false}
-              className={`flex-1 w-full resize-none bg-transparent font-mono text-[13px] leading-[1.7] p-5 outline-none pb-20 ${c.textPrimary}`}
+              className={`flex-1 w-full resize-none bg-transparent font-mono text-[14px] leading-relaxed p-6 outline-none pb-24 ${c.text}`}
             />
 
             {/* Bottom bar */}
-            <div className={`absolute bottom-0 left-0 right-0 px-5 py-3.5 flex items-center justify-between border-t ${c.border} ${c.bg}`}>
-              <span className={`hidden md:block text-[11px] font-mono ${c.textMuted}`}>
-                Ctrl+Enter
+            <div className={`absolute bottom-0 left-0 right-0 px-6 py-4 flex items-center justify-between backdrop-blur-xl border-t ${isDark ? 'bg-[#1c1c1e]/80 border-white/10' : 'bg-white/80 border-black/5'}`}>
+              <span className={`hidden md:block text-[12px] font-medium opacity-70 ${c.textMuted}`}>
+                Press <kbd className="font-sans px-1.5 py-0.5 rounded border border-current opacity-70">Ctrl+Enter</kbd>
               </span>
               <button
                 onClick={handleDecrypt}
                 disabled={loading || !token.trim()}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg text-[13px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-                  isDark
-                    ? 'bg-[#e8e8e8] text-[#111] hover:bg-white'
-                    : 'bg-[#1a1a1a] text-white hover:bg-[#333]'
-                }`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-full text-[15px] font-semibold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none text-white ${c.primaryBg} ${c.primaryHover}`}
               >
                 <AnimatePresence mode="wait">
                   {loading ? (
                     <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                      <span className="w-3 h-3 border-[1.5px] border-current border-t-transparent rounded-full animate-spin" />
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Decrypting
                     </motion.span>
                   ) : (
                     <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                      <Unlock size={13} />
+                      <Unlock size={16} />
                       Decrypt
                     </motion.span>
                   )}
@@ -282,16 +282,16 @@ export default function App() {
         </div>
 
         {/* OUTPUT PANEL */}
-        <div className={`${mobileTab === 'output' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0`}>
-          {/* Panel label */}
-          <div className={`flex items-center justify-between px-5 py-3 border-b ${c.border} ${c.surface} shrink-0`}>
-            <div className="flex items-center gap-2">
-              <span className={`text-[11px] font-semibold uppercase tracking-widest ${c.textMuted}`}>Result</span>
+        <div className={`${mobileTab === 'output' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 rounded-[24px] overflow-hidden border transition-all ${c.cardBg} ${c.cardBorder} ${c.cardShadow}`}>
+          {/* Panel header */}
+          <div className={`flex items-center justify-between px-6 py-4 border-b shrink-0 ${c.cardBorder}`}>
+            <div className="flex items-center gap-3">
+              <span className={`text-[12px] font-bold uppercase tracking-[0.1em] ${c.textMuted}`}>Result</span>
               {json && (
                 <motion.span
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isDark ? 'bg-[#2a2a2a] text-[#888]' : 'bg-[#ebebeb] text-[#888]'}`}
+                  className={`text-[11px] font-semibold px-2 py-1 rounded-md ${isDark ? 'bg-[#2c2c2e] text-[#a1a1a6]' : 'bg-[#f5f5f7] text-[#86868b]'}`}
                 >
                   {json.split('\n').length} lines
                 </motion.span>
@@ -299,21 +299,21 @@ export default function App() {
             </div>
 
             {json ? (
-              <div className="flex items-center">
-                <Btn onClick={handleCopyLink} title="Salin Link" isDark={isDark}><Link size={13} /></Btn>
-                <div className={`w-px h-3.5 mx-1 ${isDark ? 'bg-[#333]' : 'bg-[#ddd]'}`} />
-                <Btn onClick={handleCopy} title="Copy JSON" isDark={isDark}><Copy size={13} /></Btn>
-                <Btn onClick={handleDownload} title="Download" isDark={isDark}><Download size={13} /></Btn>
+              <div className="flex items-center gap-1">
+                <Btn onClick={handleCopyLink} title="Salin Link" isDark={isDark}><Link size={16} /></Btn>
+                <div className={`w-px h-4 mx-2 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                <Btn onClick={handleCopy} title="Copy JSON" isDark={isDark}><Copy size={16} /></Btn>
+                <Btn onClick={handleDownload} title="Download" isDark={isDark}><Download size={16} /></Btn>
                 <Btn onClick={handleMinify} title={isMinified ? 'Prettify' : 'Minify'} isDark={isDark}>
-                  {isMinified ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
+                  {isMinified ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
                 </Btn>
-                <div className={`w-px h-3.5 mx-1 ${isDark ? 'bg-[#333]' : 'bg-[#ddd]'}`} />
-                <Btn onClick={handleClear} title="Clear" isDark={isDark} danger><Trash2 size={13} /></Btn>
+                <div className={`w-px h-4 mx-2 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                <Btn onClick={handleClear} title="Clear" isDark={isDark} danger><Trash2 size={16} /></Btn>
               </div>
-            ) : <div className="h-6" />}
+            ) : <div className="h-8" />}
           </div>
 
-          <div className="flex-1 min-h-0 overflow-auto">
+          <div className="flex-1 min-h-0 overflow-auto bg-[#fafafa] dark:bg-[#151515]">
             <OutputViewer json={json} isEmpty={!json && !loading} isDark={isDark} />
           </div>
         </div>
@@ -337,10 +337,12 @@ function Btn({ onClick, children, title, isDark, danger }) {
     <button
       onClick={onClick}
       title={title}
-      className={`p-1.5 rounded-md transition-colors ${
+      className={`p-2 rounded-xl transition-all ${
         danger
-          ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20'
-          : isDark ? 'text-[#555] hover:text-[#ccc] hover:bg-[#222]' : 'text-[#aaa] hover:text-[#333] hover:bg-[#f0f0f0]'
+          ? 'text-red-500 hover:bg-red-500/10'
+          : isDark 
+            ? 'text-[#86868b] hover:text-white hover:bg-[#2c2c2e]' 
+            : 'text-[#86868b] hover:text-[#1d1d1f] hover:bg-[#f5f5f7]'
       }`}
     >
       {children}
