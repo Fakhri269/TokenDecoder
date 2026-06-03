@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Copy, Download, Trash2, Settings, Minimize2, Maximize2,
-  Lock, Unlock, ClipboardPaste, Link
+  Lock, Unlock, Link, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { decryptToken } from './utils/crypto';
@@ -43,7 +43,6 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
-  const [mobileTab, setMobileTab] = useState('input');
   const [theme, setTheme] = useState(getInitialTheme);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -56,8 +55,8 @@ export default function App() {
     key: 'YourSuperSecretKeyForExamOnLan13',
     iv: 'YourSuperSecretI',
   });
-  const textareaRef = useRef(null);
   const toastIdRef = useRef(0);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -77,13 +76,13 @@ export default function App() {
 
   const handleDecrypt = useCallback(async () => {
     const trimmed = token.trim();
-    if (!trimmed) { addToast('Input is empty.', 'error'); textareaRef.current?.focus(); return; }
+    if (!trimmed) { addToast('Input is empty.', 'error'); inputRef.current?.focus(); return; }
     setLoading(true); setJson(''); setParsedObj(null); setIsMinified(false);
     try {
       const plain = await decryptToken(trimmed, settings.key, settings.iv);
       const obj = JSON.parse(plain);
       setParsedObj(obj); setJson(JSON.stringify(obj, null, 2));
-      addToast('Decrypted successfully.'); setMobileTab('output');
+      addToast('Decrypted successfully.');
     } catch { addToast('Decryption failed. Check your config.', 'error'); }
     finally { setLoading(false); }
   }, [token, settings, addToast]);
@@ -111,18 +110,8 @@ export default function App() {
 
   const handleClear = useCallback(() => {
     setToken(''); setJson(''); setParsedObj(null); setIsMinified(false);
-    setMobileTab('input'); textareaRef.current?.focus();
+    setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
-
-  const handlePaste = useCallback(async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      setToken(text);
-      addToast('Pasted from clipboard.');
-    } catch {
-      addToast('Failed to paste. Check permissions.', 'error');
-    }
-  }, [addToast]);
 
   const handleCopyLink = useCallback(async () => {
     if (!parsedObj) return;
@@ -145,11 +134,22 @@ export default function App() {
     return () => window.removeEventListener('keydown', h);
   }, [handleDecrypt]);
 
-  const handleDrop = useCallback(e => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) { const r = new FileReader(); r.onload = () => setToken(r.result); r.readAsText(file); }
-  }, []);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleDecrypt();
+    }
+  };
+
+  const c = {
+    appBg: isDark ? 'bg-black' : 'bg-[#ffffff]',
+    inputPill: isDark ? 'bg-[#1c1c1e] text-white placeholder-gray-500' : 'bg-[#f0f0f5] text-black placeholder-gray-400',
+    inputBorderFocus: isDark ? 'focus:ring-white/20' : 'focus:ring-black/10',
+    cardBg: isDark ? 'bg-[#1c1c1e]' : 'bg-[#f9f9fb]',
+    cardBorder: isDark ? 'border-[#2c2c2e]' : 'border-[#ebebf0]',
+    text: isDark ? 'text-white' : 'text-black',
+    textMuted: isDark ? 'text-gray-400' : 'text-gray-500',
+  };
 
   if (!isAuthenticated) {
     return (
@@ -167,173 +167,140 @@ export default function App() {
     );
   }
 
-  const c = {
-    appBg: isDark ? 'bg-black' : 'bg-[#f2f2f7]',
-    cardBg: isDark ? 'bg-[#1c1c1e]' : 'bg-white',
-    cardBorder: isDark ? 'border-white/10' : 'border-black/5',
-    cardShadow: isDark ? 'shadow-none' : 'shadow-apple',
-    text: isDark ? 'text-white' : 'text-[#1d1d1f]',
-    textMuted: isDark ? 'text-[#86868b]' : 'text-[#86868b]',
-    segContainer: isDark ? 'bg-[#1c1c1e]' : 'bg-[#e3e3e8]',
-    segActive: isDark ? 'bg-[#3a3a3c] text-white shadow-sm' : 'bg-white text-black shadow-sm',
-    segInactive: isDark ? 'text-[#86868b]' : 'text-[#86868b]',
-    primaryBg: isDark ? 'bg-[#0a84ff]' : 'bg-[#0071e3]',
-    primaryHover: isDark ? 'hover:bg-[#007aff]' : 'hover:bg-[#0077ed]',
-    glassBar: isDark ? 'bg-[#1c1c1e]/80 border-white/10' : 'bg-white/80 border-black/5',
-  };
+  const hasResult = !!json;
 
   return (
-    <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans ${c.appBg}`}>
+    <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans transition-colors duration-500 ${c.appBg}`}>
       
-      {/* ══ HEADER ══ */}
-      <header className={`flex items-center justify-between px-6 py-4 shrink-0`}>
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-2xl flex items-center justify-center ${c.cardBg} ${c.cardShadow} ${c.cardBorder} border`}>
-            <Lock size={16} className={isDark ? 'text-[#0a84ff]' : 'text-[#0071e3]'} />
-          </div>
-          <span className={`font-semibold text-[17px] tracking-tight ${c.text}`}>
-            Token Forge
-          </span>
-        </div>
-
+      {/* Absolute Header (Top Right Settings) */}
+      <div className="absolute top-0 right-0 p-6 z-20">
         <button
           onClick={() => setSettingsOpen(true)}
-          className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${c.cardBg} ${c.cardBorder} border ${c.cardShadow} ${c.text}`}
+          className={`w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-md transition-colors ${
+            isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-black/5 hover:bg-black/10 text-black'
+          }`}
         >
-          <Settings size={16} />
+          <Settings size={18} />
         </button>
-      </header>
-
-      {/* ══ MOBILE SEGMENTED CONTROL ══ */}
-      <div className="md:hidden px-4 pb-4 shrink-0">
-        <div className={`flex p-1 rounded-lg ${c.segContainer}`}>
-          {[
-            { key: 'input', label: 'Input' },
-            { key: 'output', label: 'Result' },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setMobileTab(key)}
-              className={`flex-1 py-1.5 text-[13px] font-semibold rounded-md transition-all ${
-                mobileTab === key ? c.segActive : c.segInactive
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* ══ MAIN LAYOUT ══ */}
-      <div className="flex-1 flex flex-col md:flex-row px-4 pb-[88px] md:pb-6 gap-6 md:gap-6 overflow-hidden min-h-0 max-w-[1400px] mx-auto w-full">
+      {/* Main Animated Container */}
+      <motion.main 
+        layout
+        className="flex-1 flex flex-col items-center max-w-3xl mx-auto w-full px-4 md:px-8 relative"
+        initial={false}
+        animate={{
+          justifyContent: hasResult ? 'flex-start' : 'center',
+          paddingTop: hasResult ? '4rem' : '0rem'
+        }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300, bounce: 0 }}
+      >
         
-        {/* INPUT PANEL */}
-        <div
-          className={`${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 rounded-[20px] overflow-hidden ${c.cardBg} ${c.cardShadow}`}
-          onDragOver={e => e.preventDefault()}
-          onDrop={handleDrop}
-        >
-          {/* Panel Header */}
-          <div className={`flex items-center justify-between px-6 py-3 border-b ${c.cardBorder}`}>
-            <span className={`text-[13px] font-semibold tracking-tight ${c.text}`}>Input Token</span>
-            <div className="flex items-center gap-4">
-              <button onClick={handlePaste} className={`flex items-center gap-1.5 text-[13px] font-semibold transition-colors ${isDark ? 'text-[#0a84ff] hover:text-[#409cff]' : 'text-[#0071e3] hover:text-[#0077ed]'}`}>
-                <ClipboardPaste size={14} /> Paste
-              </button>
-            </div>
-          </div>
+        {/* Logo/Title (Visible only when empty to keep focus, or small when hasResult) */}
+        <motion.div layout className="flex flex-col items-center mb-8">
+          <motion.div 
+            layout
+            className={`flex items-center justify-center rounded-[18px] mb-4 ${isDark ? 'bg-[#1c1c1e]' : 'bg-[#f0f0f5]'}`}
+            animate={{ width: hasResult ? 40 : 64, height: hasResult ? 40 : 64, borderRadius: hasResult ? 12 : 18 }}
+          >
+            <Lock size={hasResult ? 18 : 28} className={isDark ? 'text-[#0a84ff]' : 'text-[#0071e3]'} />
+          </motion.div>
+          <motion.h1 
+            layout
+            className={`font-semibold tracking-tight ${c.text}`}
+            animate={{ fontSize: hasResult ? '18px' : '28px', opacity: hasResult ? 0 : 1 }}
+            style={{ display: hasResult ? 'none' : 'block' }}
+          >
+            Token Forge
+          </motion.h1>
+        </motion.div>
 
-          <div className="flex-1 min-h-0 relative flex flex-col">
-            <textarea
-              ref={textareaRef}
-              value={token}
-              onChange={e => setToken(e.target.value)}
-              placeholder="Paste encrypted Base64 token here..."
-              spellCheck={false}
-              className={`flex-1 w-full resize-none bg-transparent font-mono text-[14px] leading-relaxed p-6 outline-none pb-20 ${c.text}`}
-            />
-            {/* Desktop-only internal Decrypt button */}
-            <div className={`hidden md:flex absolute bottom-0 left-0 right-0 p-4 justify-between items-center bg-gradient-to-t from-${isDark ? '[#1c1c1e]' : 'white'} via-${isDark ? '[#1c1c1e]' : 'white'}/90 to-transparent pt-10`}>
-              <span className={`text-[12px] font-medium opacity-70 ${c.textMuted}`}>
-                {token.length} characters
-              </span>
-              <button
-                onClick={handleDecrypt}
-                disabled={loading || !token.trim()}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[14px] font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-white ${c.primaryBg} ${c.primaryHover}`}
+        {/* The Spotlight Input Pill */}
+        <motion.div 
+          layout
+          className={`relative w-full max-w-xl mx-auto flex items-center shadow-sm transition-shadow focus-within:shadow-md rounded-full overflow-hidden ${c.inputPill} ring-1 ring-transparent ${c.inputBorderFocus} focus-within:ring-2`}
+          style={{ minHeight: '60px' }}
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={token}
+            onChange={e => setToken(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Paste your encrypted token..."
+            spellCheck={false}
+            className={`w-full h-full bg-transparent border-none outline-none px-6 py-4 text-[16px] md:text-[17px] ${c.text}`}
+          />
+          
+          <AnimatePresence>
+            {token.trim() && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="flex items-center gap-2 pr-3"
               >
-                <AnimatePresence mode="wait">
-                  {loading ? (
-                    <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    </motion.span>
-                  ) : (
-                    <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                      <Unlock size={14} /> Decrypt
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* OUTPUT PANEL */}
-        <div className={`${mobileTab === 'output' ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0 rounded-[20px] overflow-hidden ${c.cardBg} ${c.cardShadow}`}>
-          {/* Panel Header */}
-          <div className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${c.cardBorder}`}>
-            <div className="flex items-center gap-3">
-              <span className={`text-[13px] font-semibold tracking-tight ${c.text}`}>Result</span>
-              {json && (
-                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${isDark ? 'bg-[#2c2c2e] text-[#a1a1a6]' : 'bg-[#f5f5f7] text-[#86868b]'}`}>
-                  {json.split('\n').length} lines
-                </span>
-              )}
-            </div>
-
-            {json ? (
-              <div className="flex items-center gap-1">
-                <Btn onClick={handleCopyLink} title="Salin Link" isDark={isDark}><Link size={16} /></Btn>
-                <div className={`w-px h-4 mx-2 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
-                <Btn onClick={handleCopy} title="Copy JSON" isDark={isDark}><Copy size={16} /></Btn>
-                <Btn onClick={handleDownload} title="Download" isDark={isDark}><Download size={16} /></Btn>
-                <Btn onClick={handleMinify} title={isMinified ? 'Prettify' : 'Minify'} isDark={isDark}>
-                  {isMinified ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
-                </Btn>
-                <div className={`w-px h-4 mx-2 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
-                <Btn onClick={handleClear} title="Clear" isDark={isDark} danger><Trash2 size={16} /></Btn>
-              </div>
-            ) : <div className="h-8" />}
-          </div>
-
-          <div className="flex-1 min-h-0 overflow-auto bg-transparent">
-            <OutputViewer json={json} isEmpty={!json && !loading} isDark={isDark} />
-          </div>
-        </div>
-      </div>
-
-      {/* ══ MOBILE BOTTOM FLOATING BAR ══ */}
-      <div className={`md:hidden fixed bottom-0 left-0 right-0 p-4 border-t backdrop-blur-xl ${c.glassBar} z-20`}>
-        <button
-          onClick={handleDecrypt}
-          disabled={loading || !token.trim()}
-          className={`w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-[14px] text-[15px] font-semibold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-white ${c.primaryBg} ${c.primaryHover}`}
-        >
-          <AnimatePresence mode="wait">
-            {loading ? (
-              <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Decrypting...
-              </motion.span>
-            ) : (
-              <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                <Unlock size={18} />
-                Decrypt Token
-              </motion.span>
+                {token.trim() && !hasResult && (
+                  <button
+                    onClick={handleDecrypt}
+                    disabled={loading}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center text-white ${isDark ? 'bg-[#0a84ff]' : 'bg-[#0071e3]'} hover:opacity-80 transition-opacity disabled:opacity-50`}
+                  >
+                    {loading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Unlock size={16} />}
+                  </button>
+                )}
+                {hasResult && (
+                  <button
+                    onClick={handleClear}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-[#2c2c2e] hover:bg-[#3a3a3c]' : 'bg-[#e5e5ea] hover:bg-[#d1d1d6]'}`}
+                  >
+                    <X size={16} className={c.text} />
+                  </button>
+                )}
+              </motion.div>
             )}
           </AnimatePresence>
-        </button>
-      </div>
+        </motion.div>
+
+        {/* The Result Card */}
+        <AnimatePresence>
+          {hasResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300, delay: 0.05 }}
+              className={`w-full mt-8 flex flex-col flex-1 min-h-0 rounded-[28px] overflow-hidden border shadow-xl ${c.cardBg} ${c.cardBorder}`}
+              style={{ marginBottom: '2rem' }}
+            >
+              {/* Toolbar */}
+              <div className={`flex flex-wrap items-center justify-between px-4 sm:px-6 py-4 border-b shrink-0 ${c.cardBorder}`}>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className={`text-[12px] sm:text-[13px] font-semibold tracking-tight ${c.textMuted}`}>Decrypted Result</span>
+                  <span className={`text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full ${isDark ? 'bg-[#2c2c2e] text-[#a1a1a6]' : 'bg-[#e5e5ea] text-[#8e8e93]'}`}>
+                    {json.split('\n').length} lines
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Btn onClick={handleCopyLink} title="Salin Link" isDark={isDark}><Link size={15} /></Btn>
+                  <Btn onClick={handleCopy} title="Copy JSON" isDark={isDark}><Copy size={15} /></Btn>
+                  <Btn onClick={handleDownload} title="Download" isDark={isDark}><Download size={15} /></Btn>
+                  <div className={`w-px h-4 mx-1 sm:mx-2 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                  <Btn onClick={handleMinify} title={isMinified ? 'Prettify' : 'Minify'} isDark={isDark}>
+                    {isMinified ? <Maximize2 size={15} /> : <Minimize2 size={15} />}
+                  </Btn>
+                </div>
+              </div>
+
+              {/* JSON Content */}
+              <div className="flex-1 min-h-0 overflow-auto bg-transparent p-2 sm:p-4">
+                <OutputViewer json={json} isEmpty={false} isDark={isDark} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.main>
 
       <SettingsDrawer
         isOpen={settingsOpen}
@@ -348,17 +315,15 @@ export default function App() {
   );
 }
 
-function Btn({ onClick, children, title, isDark, danger }) {
+function Btn({ onClick, children, title, isDark }) {
   return (
     <button
       onClick={onClick}
       title={title}
-      className={`p-1.5 rounded-lg transition-all ${
-        danger
-          ? 'text-red-500 hover:bg-red-500/10'
-          : isDark 
-            ? 'text-[#86868b] hover:text-white hover:bg-[#2c2c2e]' 
-            : 'text-[#86868b] hover:text-[#1d1d1f] hover:bg-[#f5f5f7]'
+      className={`p-2 rounded-full transition-all ${
+        isDark 
+          ? 'text-[#a1a1a6] hover:text-white hover:bg-[#2c2c2e]' 
+          : 'text-[#8e8e93] hover:text-black hover:bg-[#e5e5ea]'
       }`}
     >
       {children}
