@@ -149,18 +149,19 @@ export default function App() {
     cardBorder: isDark ? 'border-[#2c2c2e]' : 'border-[#ebebf0]',
     text: isDark ? 'text-white' : 'text-black',
     textMuted: isDark ? 'text-gray-400' : 'text-gray-500',
+    kbdBg: isDark ? 'bg-[#2c2c2e] text-gray-300' : 'bg-[#e5e5ea] text-gray-600',
   };
 
   if (!isAuthenticated) {
     return (
       <>
-        <PinScreen 
+        <PinScreen
           onUnlock={() => {
             setIsAuthenticated(true);
             sessionStorage.setItem('tokenForgeAuth', 'true');
-          }} 
-          isDark={isDark} 
-          addToast={addToast} 
+          }}
+          isDark={isDark}
+          addToast={addToast}
         />
         <Toast toasts={toasts} isDark={isDark} />
       </>
@@ -171,7 +172,7 @@ export default function App() {
 
   return (
     <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans transition-colors duration-500 ${c.appBg}`}>
-      
+
       {/* Absolute Header (Top Right Settings) */}
       <div className="absolute top-0 right-0 p-6 z-20">
         <button
@@ -185,7 +186,7 @@ export default function App() {
       </div>
 
       {/* Main Animated Container */}
-      <motion.main 
+      <motion.main
         layout
         className="flex-1 flex flex-col items-center max-w-3xl mx-auto w-full px-4 md:px-8 relative"
         initial={false}
@@ -195,17 +196,17 @@ export default function App() {
         }}
         transition={{ type: 'spring', damping: 30, stiffness: 300, bounce: 0 }}
       >
-        
-        {/* Logo/Title (Visible only when empty to keep focus, or small when hasResult) */}
-        <motion.div layout className="flex flex-col items-center mb-8">
-          <motion.div 
+
+        {/* Logo/Title */}
+        <motion.div layout className="flex flex-col items-center mb-6">
+          <motion.div
             layout
             className={`flex items-center justify-center rounded-[18px] mb-4 ${isDark ? 'bg-[#1c1c1e]' : 'bg-[#f0f0f5]'}`}
             animate={{ width: hasResult ? 40 : 64, height: hasResult ? 40 : 64, borderRadius: hasResult ? 12 : 18 }}
           >
             <Lock size={hasResult ? 18 : 28} className={isDark ? 'text-[#0a84ff]' : 'text-[#0071e3]'} />
           </motion.div>
-          <motion.h1 
+          <motion.h1
             layout
             className={`font-semibold tracking-tight ${c.text}`}
             animate={{ fontSize: hasResult ? '18px' : '28px', opacity: hasResult ? 0 : 1 }}
@@ -215,8 +216,51 @@ export default function App() {
           </motion.h1>
         </motion.div>
 
+        {/* Description Block — hanya tampil saat belum ada hasil */}
+        <AnimatePresence>
+          {!hasResult && (
+            <motion.div
+              key="description"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+              className="w-full max-w-xl mx-auto mb-5 text-center"
+            >
+              {/* Baris fitur singkat */}
+              <div className="flex items-center justify-center gap-4 mb-3 flex-wrap">
+                <FeaturePill isDark={isDark} icon={<Unlock size={12} />} label="Dekripsi AES" />
+                <FeaturePill isDark={isDark} icon={<Copy size={12} />} label="Salin JSON" />
+                <FeaturePill isDark={isDark} icon={<Download size={12} />} label="Unduh hasil" />
+              </div>
+
+              {/* Teks penjelasan */}
+              <p className={`text-sm leading-relaxed ${c.textMuted}`}>
+                Tempelkan token terenkripsi Anda, lalu tekan{' '}
+                <kbd className={`inline-flex items-center px-1.5 py-0.5 text-xs rounded font-mono align-middle ${c.kbdBg}`}>
+                  Enter
+                </kbd>{' '}
+                atau klik tombol{' '}
+                <span className={`inline-flex items-center gap-1 align-middle`}>
+                  <Unlock size={12} className={isDark ? 'text-[#0a84ff]' : 'text-[#0071e3]'} />
+                </span>{' '}
+                untuk mendekripsi menjadi JSON yang dapat dibaca.
+              </p>
+
+              {/* Hint keyboard shortcut */}
+              <p className={`text-xs mt-2 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
+                Shortcut:{' '}
+                <kbd className={`px-1 py-0.5 text-[10px] rounded font-mono ${c.kbdBg}`}>Ctrl</kbd>
+                {' '}+{' '}
+                <kbd className={`px-1 py-0.5 text-[10px] rounded font-mono ${c.kbdBg}`}>Enter</kbd>
+                {' '}untuk dekripsi cepat
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* The Spotlight Input Pill */}
-        <motion.div 
+        <motion.div
           layout
           className={`relative w-full max-w-xl mx-auto flex items-center shadow-sm transition-shadow focus-within:shadow-md rounded-full overflow-hidden ${c.inputPill} ring-1 ring-transparent ${c.inputBorderFocus} focus-within:ring-2`}
           style={{ minHeight: '60px' }}
@@ -227,14 +271,14 @@ export default function App() {
             value={token}
             onChange={e => setToken(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Paste your encrypted token..."
+            placeholder="Tempelkan token terenkripsi di sini..."
             spellCheck={false}
             className={`w-full h-full bg-transparent border-none outline-none px-6 py-4 text-[16px] md:text-[17px] ${c.text}`}
           />
-          
+
           <AnimatePresence>
             {token.trim() && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -276,16 +320,16 @@ export default function App() {
               {/* Toolbar */}
               <div className={`flex flex-wrap items-center justify-between px-4 sm:px-6 py-4 border-b shrink-0 ${c.cardBorder}`}>
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <span className={`text-[12px] sm:text-[13px] font-semibold tracking-tight ${c.textMuted}`}>Decrypted Result</span>
+                  <span className={`text-[12px] sm:text-[13px] font-semibold tracking-tight ${c.textMuted}`}>Hasil Dekripsi</span>
                   <span className={`text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full ${isDark ? 'bg-[#2c2c2e] text-[#a1a1a6]' : 'bg-[#e5e5ea] text-[#8e8e93]'}`}>
-                    {json.split('\n').length} lines
+                    {json.split('\n').length} baris
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Btn onClick={handleCopyLink} title="Salin Link" isDark={isDark}><Link size={15} /></Btn>
-                  <Btn onClick={handleCopy} title="Copy JSON" isDark={isDark}><Copy size={15} /></Btn>
-                  <Btn onClick={handleDownload} title="Download" isDark={isDark}><Download size={15} /></Btn>
+                  <Btn onClick={handleCopy} title="Salin JSON" isDark={isDark}><Copy size={15} /></Btn>
+                  <Btn onClick={handleDownload} title="Unduh" isDark={isDark}><Download size={15} /></Btn>
                   <div className={`w-px h-4 mx-1 sm:mx-2 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
                   <Btn onClick={handleMinify} title={isMinified ? 'Prettify' : 'Minify'} isDark={isDark}>
                     {isMinified ? <Maximize2 size={15} /> : <Minimize2 size={15} />}
@@ -306,7 +350,7 @@ export default function App() {
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         settings={settings}
-        onSave={s => { setSettings(s); setSettingsOpen(false); addToast('Settings saved.'); }}
+        onSave={s => { setSettings(s); setSettingsOpen(false); addToast('Pengaturan disimpan.'); }}
         isDark={isDark}
         onToggleTheme={toggleTheme}
       />
@@ -321,12 +365,23 @@ function Btn({ onClick, children, title, isDark }) {
       onClick={onClick}
       title={title}
       className={`p-2 rounded-full transition-all ${
-        isDark 
-          ? 'text-[#a1a1a6] hover:text-white hover:bg-[#2c2c2e]' 
+        isDark
+          ? 'text-[#a1a1a6] hover:text-white hover:bg-[#2c2c2e]'
           : 'text-[#8e8e93] hover:text-black hover:bg-[#e5e5ea]'
       }`}
     >
       {children}
     </button>
+  );
+}
+
+function FeaturePill({ isDark, icon, label }) {
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium ${
+      isDark ? 'bg-[#1c1c1e] text-gray-400' : 'bg-[#f0f0f5] text-gray-500'
+    }`}>
+      {icon}
+      {label}
+    </span>
   );
 }
